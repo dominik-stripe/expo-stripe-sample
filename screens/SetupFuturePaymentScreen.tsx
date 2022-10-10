@@ -10,7 +10,7 @@ import Button from "../components/Button";
 import { colors, apiUrl } from "../constants";
 import PaymentScreen from "../components/PaymentScreen";
 import type {
-  BillingDetails,
+  PaymentMethodCreateParams,
   PaymentIntent,
   SetupIntent,
 } from "@stripe/stripe-react-native";
@@ -66,26 +66,22 @@ export default function SetupFuturePaymentScreen() {
     const clientSecret = await createSetupIntentOnBackend(email);
 
     // 2. Gather customer billing information (ex. email)
-    const billingDetails: BillingDetails = {
+    const billingDetails: PaymentMethodCreateParams.BillingDetails = {
       email: email,
       phone: "+48888000888",
-      address: {
-        city: "Houston",
-        country: "US",
-        line1: "1459  Circle Drive",
-        line2: "Texas",
-        postalCode: "77063",
-      },
+      addressCity: "Houston",
+      addressCountry: "US",
+      addressLine1: "1459  Circle Drive",
+      addressLine2: "Texas",
+      addressPostalCode: "77063",
     };
 
     // 3. Confirm setup intent
     const { error, setupIntent: setupIntentResult } = await confirmSetupIntent(
       clientSecret,
       {
-        paymentMethodType: "Card",
-        paymentMethodData: {
-          billingDetails,
-        },
+        type: "Card",
+        billingDetails,
       }
     );
 
@@ -154,26 +150,22 @@ export default function SetupFuturePaymentScreen() {
   // If the payment failed because it requires authentication, try again with the existing PaymentMethod instead of creating a new one.
   // Otherwise collect new details and create new PaymentMethod.
   const handleRecoveryFlow = async () => {
-    const billingDetails: BillingDetails = {
+    const billingDetails: PaymentMethodCreateParams.BillingDetails = {
       email: email,
       phone: "+48888000888",
-      address: {
-        city: "Houston",
-        country: "US",
-        line1: "1459  Circle Drive",
-        line2: "Texas",
-        postalCode: "77063",
-      },
+      addressCity: "Houston",
+      addressCountry: "US",
+      addressLine1: "1459  Circle Drive",
+      addressLine2: "Texas",
+      addressPostalCode: "77063",
     }; // mocked data for tests
 
     if (retrievedPaymentIntent?.lastPaymentError?.paymentMethod.id) {
       const { error } = await confirmPayment(
         retrievedPaymentIntent.clientSecret,
         {
-          paymentMethodType: "Card",
-          paymentMethodData: {
-            billingDetails,
-          },
+          type: "Card",
+          billingDetails,
         }
       );
       if (error) {
